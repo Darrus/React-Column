@@ -1,36 +1,13 @@
-import React from 'react';
+import React, { Component } from 'react';
+import Table from './Table';
 
-const PeopleTable = (prop) => {
-    let data = prop.data;
-    let columnHeaders = _extractColumns(data);
-    
-    // Headers
-    let headers = (
-        <tr>
-        {columnHeaders.map(name=>{
-            return <th>{name}</th>;
-        })}
-        </tr>
-    );
+class PeopleTable extends Component {
+    state = {
+        columnHeaders: this._extractColumns(this.props.data),
+        data: this.props.data
+    };
 
-    let content = data.map((element, index)=>{
-        return <tr>{columnHeaders.map(header=>{
-            return <td>{element[header]}</td>;
-        })}</tr>;
-    });
-
-    return (
-        <table className='PeopleTable'>
-            <thead>
-                {headers}
-            </thead>
-            <tbody>
-                {content}
-            </tbody>
-        </table>
-    );
-
-    function _extractColumns(data) {
+    _extractColumns(data) {
         let result = [];
         for(let element of data) {
             let keys = Object.keys(element);
@@ -41,6 +18,25 @@ const PeopleTable = (prop) => {
             }
         }
         return result;
+    }
+
+    sortBy = (key)=>{
+        let newData = [...this.state.data];
+        newData.sort((a, b)=>{
+            if(!a.hasOwnProperty(key)) return 1;
+            if(!b.hasOwnProperty(key)) return -1;
+            if(a[key] < b[key]) return -1;
+            if(a[key] > b[key]) return 1;
+            return 0;
+        });
+        this.setState({data: newData});
+    }
+
+    render(){
+        return <Table 
+        data={this.state.data} 
+        columnHeaders={this.state.columnHeaders}
+        sortHandler={this.sortBy}/>;
     }
 }
 

@@ -1,0 +1,14 @@
+table {
+    width: 80%;
+    border: solid black 2px;
+    margin: auto;
+}
+
+th {
+    border-bottom: solid black 2px;
+    border-right: solid black 2px;
+}
+
+td {
+    border-bottom: solid grey 1px;
+}
