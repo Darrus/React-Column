@@ -9,7 +9,11 @@ const Table = (prop) => {
     let headers = (
         <tr>
         {columnHeaders.map(name=>{
-            return <th onClick={prop.sortHandler.bind(this, name)}>{name}</th>;
+            return <th>
+                    <span>{name}</span>
+                    <span className="upArrow" onClick={prop.sortHandler.bind(this, name, 1)}>^</span>
+                    <span className="downArrow" onClick={prop.sortHandler.bind(this, name, -1)}>v</span>
+                </th>;
         })}
         </tr>
     );

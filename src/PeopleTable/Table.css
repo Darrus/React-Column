@@ -1,7 +1,7 @@
 table {
     width: 80%;
     border: solid black 2px;
-    margin: auto;
+    margin: 1rem auto;
 }
 
 th {
@@ -11,4 +11,9 @@ th {
 
 td {
     border-bottom: solid grey 1px;
+}
+
+.upArrow, .downArrow {
+    margin: 0rem 0.2rem;
+    cursor: pointer;
 }
