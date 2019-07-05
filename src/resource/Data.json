@@ -1,4 +1,4 @@
-let data = [
+[
     {
         "name": "Steve",
         "age": 27,
@@ -208,5 +208,3 @@ let data = [
         "married": true
     }
 ]
-
-export default data;

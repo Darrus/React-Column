@@ -1,31 +1,52 @@
 import React, { Component } from 'react';
-import Table from './Table';
 import './PeopleTable.css';
 
 class PeopleTable extends Component {
-    state = {
-        columnHeaders: this._extractColumns(this.props.data),
-        page: 1,
-        itemsPerPage: 10,
-        filteredData: this.props.data,
-        displayData: this._getPageData(this.props.data, 1, 10)
-    };
+    constructor(props) {
+        super(props);
+
+        const columnHeaders = this._extractColumns(this.props.data);
+        const page = 1;
+        const itemsPerPage = 10;
+        const filteredData = this.props.data;
+        const displayData = this._getPageData(this.props.data, page, itemsPerPage);
+        const sortSettings = {};
+        
+        // Initialize sort settings object with keys from each column
+        for(let col of columnHeaders) {
+            sortSettings[col] = 0;
+        }
+
+        this.state = {
+            columnHeaders,
+            page,
+            itemsPerPage,
+            filteredData,
+            displayData,
+            sortSettings
+        }
+    }
 
     sortBy = (key, asc)=>{
-        let newData = [...this.state.filteredData];
-        newData.sort((a, b)=>{
-            // Pushes all empty values to the bottom
-            if(!a.hasOwnProperty(key)) return 1;
-            if(!b.hasOwnProperty(key)) return -1;
+        let displayData = [...this.state.displayData];
+        let sortSettings = {...this.state.sortSettings};
+        sortSettings[key] = asc;
 
-            // Sort
-            if(a[key] < b[key]) return -1 * asc;
-            if(a[key] > b[key]) return 1 * asc;
-            return 0;
+        displayData.sort((a, b)=>{
+            for(let sortCol in sortSettings) {
+                if(!sortSettings.hasOwnProperty(sortCol) || sortSettings[sortCol] === 0) continue;
+
+                // Pushes all empty values to the bottom
+                if(!a.hasOwnProperty(sortCol)) return 1;
+                if(!b.hasOwnProperty(sortCol)) return -1;
+    
+                // Sort
+                if(a[sortCol] < b[sortCol]) return -1 * sortSettings[sortCol];
+                if(a[sortCol] > b[sortCol]) return 1 * sortSettings[sortCol];
+            }
         });
 
-        let pageData = this._getPageData(newData, 1, this.state.itemsPerPage);
-        this.setState({filteredData: newData, displayData: pageData, page: 1 });
+        this.setState({displayData, sortSettings});
     }
 
     search = (event)=>{
@@ -44,12 +65,25 @@ class PeopleTable extends Component {
 
         let pageData = this._getPageData(newData, 1, this.state.itemsPerPage);
         this.setState({filteredData: newData, displayData: pageData, page: 1 });
+        this.resetSort();
     }
 
     changePage = (amount)=>{
         let page = this.state.page + amount;
         let pageData = this._getPageData(this.state.filteredData, page, this.state.itemsPerPage);
         this.setState({displayData: pageData, page: page});
+    }
+
+    resetSort = ()=>{
+        let sortSettings = {...this.state.sortSettings};
+        for(let col in sortSettings) {
+            if(!sortSettings.hasOwnProperty(col)) continue;
+            
+            sortSettings[col] = 0;
+        }
+
+        let displayData = this._getPageData(this.state.filteredData, this.state.page, this.state.itemsPerPage);
+        this.setState({displayData, sortSettings});
     }
 
     _getPageData(data, page, itemsPerPage){
@@ -69,7 +103,7 @@ class PeopleTable extends Component {
             for(let key of keys) {
                 let lowerCaseKey = key.toLowerCase();
                 if(!result.includes(lowerCaseKey))
-                    result.push(lowerCaseKey);
+                    result.push(key);
             }
         }
         return result;
@@ -87,16 +121,51 @@ class PeopleTable extends Component {
             next = (<span className="pagination" onClick={this.changePage.bind(this, 1)}>Next</span>);
         }
 
-        return <div>
+        // Initialize table headers
+        let tableHeader = (
+            <tr>
+            {this.state.columnHeaders.map(name=>{
+                return <th>
+                        <span>{name}</span>
+                        <span className={this.state.sortSettings[name] === 1 ? "upArrow red" : "upArrow"} onClick={this.sortBy.bind(this, name, 1)}>^</span>
+                        <span className={this.state.sortSettings[name] === -1 ? "downArrow red" : "downArrow"} onClick={this.sortBy.bind(this, name, -1)}>v</span>
+                    </th>;
+            })}
+            </tr>
+        );
+
+        // Initialize table body
+        let tableBody = this.state.displayData.map((element, index)=>{
+            return <tr>{this.state.columnHeaders.map(header=>{
+                let text = "";
+
+                // If the element is a boolean, display as Yes or No instead of true or false
+                if(typeof(element[header]) === "boolean")
+                    text = element[header] ? "Yes" : "No";
+                else
+                    text = element[header];
+
+                return <td>{text}</td>;
+            })}</tr>;
+        });
+
+        return (
+        <div>
             <h1>People Table</h1>
+            <span className="clear" onClick={this.resetSort}>Clear sort settings</span>
             <input type='text' onChange={this.search}></input>
             {prev}
             {next}
-            <Table 
-            data={this.state.displayData} 
-            columnHeaders={this.state.columnHeaders}
-            sortHandler={this.sortBy}/>
-        </div>;
+            <table className='Table'>
+                <thead>
+                    {tableHeader}
+                </thead>
+                <tbody>
+                    {tableBody}
+                </tbody>
+            </table>
+        </div>
+        );
     }
 }
 

@@ -1,7 +1,6 @@
 import React from 'react';
 import PeopleTable from './PeopleTable/PeopleTable'
-import Data from './PeopleTable/Data'
-import logo from './logo.svg';
+import Data from './resource/Data.json'
 import './App.css';
 
 function App() {
